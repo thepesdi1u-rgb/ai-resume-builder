@@ -72,7 +72,8 @@ ${validatedData.certifications ? `- ${validatedData.certifications}` : ""}
       .single();
 
     if (dbError || !resumeRecord) {
-      throw new Error("Failed to save resume securely to database. Please check your Supabase connection.");
+      console.error("Supabase Database Error:", dbError);
+      throw new Error(`Database error: ${dbError?.message || 'Failed to insert resume'}`);
     }
 
     return NextResponse.json({ id: resumeRecord.id });
