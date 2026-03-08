@@ -1,34 +1,18 @@
 import { notFound } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { ResumePreview } from "@/components/ResumePreview";
-import fs from "fs";
-import path from "path";
-import os from "os";
-
 export default async function ResumePage({
   params,
 }: {
   params: { id: string };
 }) {
-  let resume = null;
+  const { data: resume, error } = await supabase
+    .from("resumes")
+    .select("*")
+    .eq("id", params.id)
+    .single();
 
-  if (params.id.startsWith("temp-")) {
-    const tempFile = path.join(os.tmpdir(), `${params.id}.json`);
-    if (fs.existsSync(tempFile)) {
-      resume = JSON.parse(fs.readFileSync(tempFile, 'utf8'));
-    }
-  } else {
-    const { data, error } = await supabase
-      .from("resumes")
-      .select("*")
-      .eq("id", params.id)
-      .single();
-    if (!error && data) {
-      resume = data;
-    }
-  }
-
-  if (!resume) {
+  if (error || !resume) {
     notFound();
   }
 

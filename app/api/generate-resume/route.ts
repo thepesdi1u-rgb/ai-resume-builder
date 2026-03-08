@@ -1,8 +1,6 @@
 import { NextResponse } from "next/server";
 import { groq } from "@/lib/groq";
-import fs from "fs";
-import path from "path";
-import os from "os";
+import { supabase } from "@/lib/supabase";
 import { resumeFormSchema } from "@/lib/validators";
 
 export async function POST(request: Request) {
@@ -61,23 +59,23 @@ ${validatedData.certifications ? `- ${validatedData.certifications}` : ""}
       throw new Error("Failed to generate resume from AI");
     }
 
-    const resumeId = "temp-" + Date.now();
-    
-    // Save to local filesystem as a fallback hack
-    const tempDir = os.tmpdir();
-    
-    fs.writeFileSync(
-      path.join(tempDir, `${resumeId}.json`), 
-      JSON.stringify({
-        id: resumeId,
+    // Save directly to the Supabase database since serverless platforms do not share /tmp
+    const { data: resumeRecord, error: dbError } = await supabase
+      .from("resumes")
+      .insert({
         name: validatedData.name,
         email: validatedData.email,
         raw_input: validatedData,
         generated_resume: generatedResume,
       })
-    );
+      .select("id")
+      .single();
 
-    return NextResponse.json({ id: resumeId });
+    if (dbError || !resumeRecord) {
+      throw new Error("Failed to save resume securely to database. Please check your Supabase connection.");
+    }
+
+    return NextResponse.json({ id: resumeRecord.id });
   } catch (error: unknown) {
     console.error("API Error:", error);
     return NextResponse.json(
