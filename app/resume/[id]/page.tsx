@@ -3,6 +3,7 @@ import { supabase } from "@/lib/supabase";
 import { ResumePreview } from "@/components/ResumePreview";
 import fs from "fs";
 import path from "path";
+import os from "os";
 
 export default async function ResumePage({
   params,
@@ -12,7 +13,7 @@ export default async function ResumePage({
   let resume = null;
 
   if (params.id.startsWith("temp-")) {
-    const tempFile = path.join(process.cwd(), '.tmp-resumes', `${params.id}.json`);
+    const tempFile = path.join(os.tmpdir(), `${params.id}.json`);
     if (fs.existsSync(tempFile)) {
       resume = JSON.parse(fs.readFileSync(tempFile, 'utf8'));
     }
