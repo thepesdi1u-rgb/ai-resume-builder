@@ -3,11 +3,62 @@
 import { useState, useRef } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { Download, Edit2, Save, Loader2, CheckCircle } from "lucide-react";
+import { Download, Edit2, Save, Loader2, CheckCircle, LayoutTemplate } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { supabase } from "@/lib/supabase";
+
+const RESUME_TEMPLATES = [
+  {
+    id: "classic",
+    name: "Classic Executive",
+    containerStyle: { backgroundColor: '#FCFBF8', color: '#1C1917', fontFamily: '"Georgia", "Times New Roman", Times, serif' },
+    proseClass: "prose prose-sm prose-stone max-w-none prose-h1:text-[2.5rem] prose-h1:font-serif prose-h1:text-center prose-h1:mb-0 prose-h1:text-[#1c1917] prose-h1:tracking-tight prose-h2:text-[1.15rem] prose-h2:font-serif prose-h2:border-b-[1.5px] prose-h2:border-stone-800/80 prose-h2:pb-1 prose-h2:mt-6 prose-h2:mb-3 prose-h2:text-[#1c1917] prose-h2:tracking-wider prose-h2:uppercase prose-p:my-1 prose-p:leading-relaxed prose-p:first-of-type:text-center prose-p:first-of-type:mb-6 prose-p:first-of-type:text-stone-600 prose-ul:my-1 prose-li:my-0.5 prose-strong:font-bold prose-strong:text-[#1c1917] text-[10.5pt]"
+  },
+  {
+    id: "modern",
+    name: "Modern Minimalist",
+    containerStyle: { backgroundColor: '#FFFFFF', color: '#333333', fontFamily: '"Inter", "Helvetica Neue", Helvetica, sans-serif' },
+    proseClass: "prose prose-sm max-w-none prose-h1:text-[2.2rem] prose-h1:font-light prose-h1:text-left prose-h1:mb-1 prose-h1:text-black prose-h2:text-[1.1rem] prose-h2:font-medium prose-h2:text-gray-400 prose-h2:uppercase prose-h2:tracking-widest prose-h2:mt-6 prose-h2:mb-4 prose-p:my-1 prose-p:leading-relaxed prose-p:first-of-type:text-left prose-p:first-of-type:mb-6 prose-p:first-of-type:text-gray-500 prose-ul:my-1 prose-li:my-0.5 prose-strong:font-semibold text-[10pt]"
+  },
+  {
+    id: "tech",
+    name: "Tech / Engineering",
+    containerStyle: { backgroundColor: '#FAFAFA', color: '#111827', fontFamily: '"Roboto Mono", "Courier New", Courier, monospace' },
+    proseClass: "prose prose-sm max-w-none prose-h1:text-[2rem] prose-h1:font-bold prose-h1:text-blue-600 prose-h1:mb-2 prose-h2:text-[1.2rem] prose-h2:font-semibold prose-h2:border-l-4 prose-h2:border-blue-600 prose-h2:pl-2 prose-h2:mt-5 prose-h2:mb-3 prose-p:my-1 prose-p:text-gray-700 prose-p:first-of-type:mb-5 prose-ul:my-1 prose-li:my-0.5 prose-strong:text-black text-[9.5pt]"
+  },
+  {
+    id: "creative",
+    name: "Creative Studio",
+    containerStyle: { backgroundColor: '#FDF8F5', color: '#2D3748', fontFamily: 'system-ui, "-apple-system", sans-serif' },
+    proseClass: "prose prose-sm max-w-none prose-h1:text-[3rem] prose-h1:font-extrabold prose-h1:text-rose-500 prose-h1:text-center prose-h1:mb-2 prose-h2:text-[1.3rem] prose-h2:font-bold prose-h2:text-rose-400 prose-h2:mt-6 prose-h2:mb-3 prose-p:my-1.5 prose-p:first-of-type:text-center prose-p:first-of-type:font-medium prose-p:first-of-type:mb-6 prose-ul:my-1.5 prose-li:my-0.5 text-[10.5pt]"
+  },
+  {
+    id: "academic",
+    name: "Academic CV",
+    containerStyle: { backgroundColor: '#FFFFFF', color: '#000000', fontFamily: '"Times New Roman", Times, serif' },
+    proseClass: "prose prose-sm max-w-none prose-h1:text-[2rem] prose-h1:font-bold prose-h1:text-center prose-h1:mb-1 prose-h2:text-[1.1rem] prose-h2:font-bold prose-h2:border-b border-black prose-h2:mt-4 prose-h2:mb-2 prose-h2:uppercase prose-p:my-0.5 prose-p:first-of-type:text-center prose-p:first-of-type:mb-4 prose-ul:my-0.5 prose-li:my-0 text-[11pt]"
+  },
+  {
+    id: "bold",
+    name: "Bold Professional",
+    containerStyle: { backgroundColor: '#ffffff', color: '#09090b', fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif' },
+    proseClass: "prose prose-sm max-w-none prose-h1:text-[2.8rem] prose-h1:font-black prose-h1:tracking-tighter prose-h1:text-black prose-h1:mb-1 prose-h2:text-[1.4rem] prose-h2:font-black prose-h2:text-black prose-h2:mt-6 prose-h2:mb-2 prose-p:my-1 prose-p:first-of-type:text-gray-600 prose-p:first-of-type:mb-5 prose-ul:my-1 prose-li:my-0.5 text-[10pt]"
+  },
+  {
+    id: "elegant",
+    name: "Elegant Serif",
+    containerStyle: { backgroundColor: '#F8F9FA', color: '#343A40', fontFamily: '"Georgia", "Times New Roman", serif' },
+    proseClass: "prose prose-sm max-w-none prose-h1:text-[2.5rem] prose-h1:font-normal prose-h1:text-center prose-h1:text-slate-800 prose-h1:mb-2 prose-h2:text-[1.2rem] prose-h2:italic prose-h2:text-center prose-h2:text-slate-600 prose-h2:mt-6 prose-h2:mb-4 prose-p:my-1.5 prose-p:first-of-type:text-center prose-p:first-of-type:mb-6 prose-p:leading-relaxed prose-ul:my-1.5 text-[10.5pt]"
+  },
+  {
+    id: "startup",
+    name: "Startup Casual",
+    containerStyle: { backgroundColor: '#FFFFFF', color: '#374151', fontFamily: '"Trebuchet MS", "Lucida Sans Unicode", sans-serif' },
+    proseClass: "prose prose-sm max-w-none prose-h1:text-[2.4rem] prose-h1:font-bold prose-h1:text-emerald-600 prose-h1:mb-2 prose-h2:text-[1.2rem] prose-h2:font-bold prose-h2:text-emerald-500 prose-h2:bg-emerald-50 prose-h2:px-2 prose-h2:py-1 prose-h2:rounded prose-h2:mt-5 prose-h2:mb-3 prose-p:my-1 prose-p:first-of-type:text-gray-500 prose-p:first-of-type:mb-5 prose-ul:my-1 text-[10.5pt]"
+  }
+];
 
 interface ResumePreviewProps {
   initialResume: string;
@@ -20,6 +71,7 @@ export function ResumePreview({ initialResume, resumeId }: ResumePreviewProps) {
   const [isSaving, setIsSaving] = useState(false);
   const [atsScore, setAtsScore] = useState<{ score: number; feedback: string[] } | null>(null);
   const [isCheckingAts, setIsCheckingAts] = useState(false);
+  const [activeTemplate, setActiveTemplate] = useState(RESUME_TEMPLATES[0]);
   const resumeRef = useRef<HTMLDivElement>(null);
 
   const handleSave = async () => {
@@ -95,12 +147,24 @@ export function ResumePreview({ initialResume, resumeId }: ResumePreviewProps) {
         <Button 
           onClick={handleCheckAts} 
           variant="outline" 
-          className="gap-2 ml-auto border-blue-600/30 text-blue-600 bg-blue-50 hover:bg-blue-100 ring-offset-background"
+          className="gap-2 border-blue-600/30 text-blue-600 bg-blue-50 hover:bg-blue-100 ring-offset-background"
           disabled={isCheckingAts}
         >
           {isCheckingAts ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle className="h-4 w-4" />}
-          Check ATS Score
+          Check ATS
         </Button>
+        <div className="flex items-center gap-2 ml-auto">
+          <LayoutTemplate className="h-4 w-4 text-muted-foreground hidden sm:block" />
+          <select 
+            className="text-sm bg-background border rounded-md px-3 py-2 outline-none focus:ring-2 focus:ring-primary cursor-pointer hover:bg-accent hover:text-accent-foreground"
+            value={activeTemplate.id}
+            onChange={(e) => setActiveTemplate(RESUME_TEMPLATES.find(t => t.id === e.target.value) || RESUME_TEMPLATES[0])}
+          >
+            {RESUME_TEMPLATES.map(t => (
+              <option key={t.id} value={t.id}>{t.name}</option>
+            ))}
+          </select>
+        </div>
         <Button onClick={handleDownload} variant="default" className="gap-2 bg-primary">
           <Download className="h-4 w-4" />
           Download PDF
@@ -143,19 +207,18 @@ export function ResumePreview({ initialResume, resumeId }: ResumePreviewProps) {
           </div>
         ) : (
           <div 
-            className="w-full shrink-0 shadow-[0_20px_50px_rgba(0,0,0,0.1)] mx-auto border border-stone-200/50" 
+            className="w-full shrink-0 shadow-[0_20px_50px_rgba(0,0,0,0.1)] mx-auto overflow-hidden border border-stone-200/50" 
             style={{ 
               minHeight: '1056px', 
               width: '816px', 
               padding: '1in',
-              backgroundColor: '#FCFBF8',
-              color: '#1C1917'
+              ...activeTemplate.containerStyle,
             }} 
             ref={resumeRef}
           >
             <div 
-              className="prose prose-sm prose-stone max-w-none prose-h1:text-[2.5rem] prose-h1:font-serif prose-h1:text-center prose-h1:mb-0 prose-h1:text-[#1c1917] prose-h1:tracking-tight prose-h2:text-[1.15rem] prose-h2:font-serif prose-h2:border-b-[1.5px] prose-h2:border-stone-800/80 prose-h2:pb-1 prose-h2:mt-6 prose-h2:mb-3 prose-h2:text-[#1c1917] prose-h2:tracking-wider prose-h2:uppercase prose-p:my-1 prose-p:leading-relaxed prose-p:first-of-type:text-center prose-p:first-of-type:mb-6 prose-p:first-of-type:text-stone-600 prose-ul:my-1 prose-li:my-0.5 prose-strong:font-bold prose-strong:text-[#1c1917] text-[10.5pt]" 
-              style={{ fontFamily: '"Georgia", "Times New Roman", Times, serif' }}
+              className={activeTemplate.proseClass} 
+              style={{ fontFamily: activeTemplate.containerStyle.fontFamily }}
             >
               <ReactMarkdown remarkPlugins={[remarkGfm]}>
                 {content}
