@@ -1,6 +1,8 @@
 import { notFound } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { ResumePreview } from "@/components/ResumePreview";
+import fs from "fs";
+import path from "path";
 
 export default async function ResumePage({
   params,
@@ -10,8 +12,6 @@ export default async function ResumePage({
   let resume = null;
 
   if (params.id.startsWith("temp-")) {
-    const fs = require('fs');
-    const path = require('path');
     const tempFile = path.join(process.cwd(), '.tmp-resumes', `${params.id}.json`);
     if (fs.existsSync(tempFile)) {
       resume = JSON.parse(fs.readFileSync(tempFile, 'utf8'));

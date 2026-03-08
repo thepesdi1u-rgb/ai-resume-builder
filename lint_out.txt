@@ -1,0 +1,29 @@
+
+> ai-resume-builder@0.1.0 lint
+> next lint
+
+
+./app/api/generate-resume/route.ts
+3:10  Error: 'supabase' is defined but never used.  @typescript-eslint/no-unused-vars
+62:9  Error: 'resumeId' is never reassigned. Use 'const' instead.  prefer-const
+65:16  Error: A `require()` style import is forbidden.  @typescript-eslint/no-require-imports
+66:18  Error: A `require()` style import is forbidden.  @typescript-eslint/no-require-imports
+
+./app/login/page.tsx
+23:15  Error: 'data' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+34:19  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+102:16  Error: `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`.  react/no-unescaped-entities
+
+./app/resume/[id]/page.tsx
+13:16  Error: A `require()` style import is forbidden.  @typescript-eslint/no-require-imports
+14:18  Error: A `require()` style import is forbidden.  @typescript-eslint/no-require-imports
+
+./app/signup/page.tsx
+10:31  Error: 'UserPlus' is defined but never used.  @typescript-eslint/no-unused-vars
+23:15  Error: 'data' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+34:19  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./components/ResumePreview.tsx
+56:14  Error: 'err' is defined but never used.  @typescript-eslint/no-unused-vars
+
+info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/basic-features/eslint#disabling-rules

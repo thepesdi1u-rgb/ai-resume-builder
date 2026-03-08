@@ -7,7 +7,7 @@ import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { Loader2, Mail, Lock, UserPlus, ArrowRight } from "lucide-react";
+import { Loader2, Mail, Lock, ArrowRight } from "lucide-react";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -20,7 +20,7 @@ export default function SignupPage() {
     setIsLoading(true);
 
     try {
-      const { data, error } = await supabase.auth.signUp({
+      const { error } = await supabase.auth.signUp({
         email,
         password,
       });
@@ -31,8 +31,8 @@ export default function SignupPage() {
 
       toast.success("Account created successfully! Please log in.");
       router.push("/login"); // Redirect to login
-    } catch (err: any) {
-      toast.error(err.message || "Failed to create account.");
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "Failed to create account.");
     } finally {
       setIsLoading(false);
     }

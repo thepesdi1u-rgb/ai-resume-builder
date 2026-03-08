@@ -53,7 +53,7 @@ export function ResumePreview({ initialResume, resumeId }: ResumePreviewProps) {
       const data = await res.json();
       setAtsScore(data);
       toast.success("ATS check complete!");
-    } catch (err) {
+    } catch {
       toast.error("Failed to check ATS score.");
     } finally {
       setIsCheckingAts(false);

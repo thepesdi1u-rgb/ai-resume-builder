@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { groq } from "@/lib/groq";
-import { supabase } from "@/lib/supabase";
+import fs from "fs";
+import path from "path";
 import { resumeFormSchema } from "@/lib/validators";
 
 export async function POST(request: Request) {
@@ -59,11 +60,9 @@ ${validatedData.certifications ? `- ${validatedData.certifications}` : ""}
       throw new Error("Failed to generate resume from AI");
     }
 
-    let resumeId = "temp-" + Date.now();
+    const resumeId = "temp-" + Date.now();
     
     // Save to local filesystem as a fallback hack
-    const fs = require('fs');
-    const path = require('path');
     const tempDir = path.join(process.cwd(), '.tmp-resumes');
     if (!fs.existsSync(tempDir)) fs.mkdirSync(tempDir);
     

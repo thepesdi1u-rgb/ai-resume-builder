@@ -20,7 +20,7 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
@@ -31,8 +31,8 @@ export default function LoginPage() {
 
       toast.success("Successfully logged in!");
       router.push("/create"); // Redirect to the resume builder
-    } catch (err: any) {
-      toast.error(err.message || "Failed to log in.");
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "Failed to log in.");
     } finally {
       setIsLoading(false);
     }
@@ -99,7 +99,7 @@ export default function LoginPage() {
           </form>
 
           <div className="mt-8 text-center text-sm text-muted-foreground">
-            Don't have an account?{" "}
+            Don&apos;t have an account?{" "}
             <Link href="/signup" className="text-primary font-semibold hover:underline">
               Sign up free
             </Link>
