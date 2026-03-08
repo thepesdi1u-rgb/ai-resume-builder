@@ -1,11 +1,13 @@
 import Groq from 'groq-sdk';
 
-const groqApiKey = process.env.GROQ_API_KEY;
+// Safely grab the key and remove any accidental quotes or surrounding spaces the USER may have pasted in Vercel
+const rawKey = process.env.GROQ_API_KEY || "";
+const cleanApiKey = rawKey.replace(/['"]/g, '').trim();
 
-if (!groqApiKey) {
-  console.warn("Warning: GROQ_API_KEY environment variable is not set. Resumes cannot be generated.");
+if (!cleanApiKey || cleanApiKey === "dummy_key") {
+  console.warn("Warning: GROQ_API_KEY environment variable is not set correctly. Resumes cannot be generated.");
 }
 
 export const groq = new Groq({
-  apiKey: groqApiKey || "dummy_key", // Groq requires a string, but it will fail on the API side if it's dummy
+  apiKey: cleanApiKey || "dummy_key", // Fallback to avoid build crashing if completely missing
 });
